@@ -48,6 +48,7 @@ void setup() {
   connect_to_wifi();
 
   server.on("/", handle_root);
+  server.on("/temp", handle_temp);
   server.begin();
 
   Udp.begin(4444);
@@ -132,6 +133,12 @@ void handle_root() {
   server.send(200, "text/html", message);
 }
 
+void handle_temp() {
+  String message;
+  message += temp.get();
+  server.send(200, "text/text", message);
+}
+
 void get_temp() {
   temp_sensor.requestTemperatures();
   int t = temp_sensor.getTempCByIndex(0);
@@ -158,7 +165,7 @@ void blink() {
 }
 
 char udp_buffer[UDP_TX_PACKET_MAX_SIZE + 1];
-char reply_buffer[] = "thunder";
+char thunder[] = "thunder";
 
 void flash_thunder() {
   int packet_size = Udp.parsePacket();
@@ -170,7 +177,12 @@ void flash_thunder() {
 
     if (strcmp(udp_buffer, "flash") == 0) {
       Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
-      Udp.write(reply_buffer);
+      Udp.write(thunder);
+      Udp.endPacket();
+    } else if (strcmp(udp_buffer, "temp") == 0) {
+      Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+      sprintf(udp_buffer, "%d", temp.get());
+      Udp.write(udp_buffer);
       Udp.endPacket();
     }
   }
