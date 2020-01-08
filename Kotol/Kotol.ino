@@ -91,7 +91,7 @@ void loop() {
 
   } else {
     start_blink();
-    connect_to_wifi();
+    WiFi.begin();
     stop_blink();
   }
 }
